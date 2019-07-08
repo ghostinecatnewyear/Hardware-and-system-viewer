@@ -11,10 +11,12 @@
 
 class DataCollector
 {
+    DataCollector() = delete;
+
 public:
-    static void collectData(const QString outFilePath,
-                            const QString stylesFilePath, const bool doIncludeStyles,
-                            const QString scriptsFilePath, const bool doIncludeScripts);
+    static void collectData(const QString &outFilePath,
+                            const QString &stylesFilePath,  const bool doIncludeStyles,
+                            const QString &scriptsFilePath, const bool doIncludeScripts);
 };
 
 #endif // DATACOLLECTOR_H

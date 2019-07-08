@@ -3,10 +3,10 @@
 
 #include <QMainWindow>
 #include <QMenuBar>
-#include <QWebEngineView>
-#include <QPushButton>
-#include "aboutwindow.h"
 #include "outerfileincluder.h"
+#include <QPushButton>
+#include <QWebEngineView>
+#include "aboutwindow.h"
 
 class MainWindow : public QMainWindow
 {
@@ -14,16 +14,15 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
 
 private:
-    QMenuBar *_menuBar;
-    OuterFileIncluder *_stylesIncluder;
-    OuterFileIncluder *_scriptsIncluder;
-    QPushButton *_collectDataButton;
-    QLabel *_warningMessage;
-    QWebEngineView *_dataVisualizer;
-    AboutWindow *_aboutWindow;
+    QMenuBar          _menuBar;
+    OuterFileIncluder _stylesIncluder;
+    OuterFileIncluder _scriptsIncluder;
+    QPushButton       _collectDataButton;
+    QLabel            _warningMessage;
+    QWebEngineView    _dataVisualizer;
+    AboutWindow       _aboutWindow;
 
 private slots:
     void onCollectData();

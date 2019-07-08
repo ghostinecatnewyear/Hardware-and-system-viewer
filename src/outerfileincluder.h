@@ -1,8 +1,8 @@
 #ifndef OUTERFILEINCLUDER_H
 #define OUTERFILEINCLUDER_H
 
-#include <QCheckBox>
 #include "filesystemworkmodule.h"
+#include <QCheckBox>
 
 class OuterFileIncluder : public FileSystemWorkModule
 {
@@ -10,11 +10,10 @@ class OuterFileIncluder : public FileSystemWorkModule
 
 public:
     OuterFileIncluder(const QString &title = "Выбор файла", const QString &extensionFilter = QString());
-    ~OuterFileIncluder() override;
     bool isActive() const;
 
 protected:
-    QCheckBox *_activity;
+    QCheckBox _activity;
 
 private slots:
     virtual void onSpecifyPath() override;
