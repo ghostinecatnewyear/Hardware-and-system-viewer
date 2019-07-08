@@ -9,5 +9,5 @@ DataSaver::DataSaver(const QString &title, const QString &extensionFilter)
 
 Q_SLOT void DataSaver::onSpecifyPath()
 {
-    _path->setText(QFileDialog::getSaveFileName(nullptr, "Сохранение файла", "C:/", "*.html"));
+    _path.setText(QFileDialog::getSaveFileName(nullptr, "Сохранение файла", "C:/", "*.html"));
 }

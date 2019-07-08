@@ -1,11 +1,24 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QSplashScreen>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QApplication application(argc, argv);
 
-    return a.exec();
+    QPixmap image(":/resources/img/splashscreen.png");
+    QSplashScreen splashScreen(image);
+    QTime stopwatch;
+    const int splashScreenDuration = 3000;
+    splashScreen.show();
+    stopwatch.start();
+    while (stopwatch.elapsed() < splashScreenDuration)
+    {
+    }
+
+    MainWindow mainWindow;
+    mainWindow.show();
+    splashScreen.finish(&mainWindow);
+
+    return application.exec();
 }
