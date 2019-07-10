@@ -4,17 +4,20 @@
 #include <Windows.h>
 #include <string>
 
-/**
- * Библиотека, предоставляющая функции, позволяющие определять
- * характеристики системы.
- */
-
 namespace WindowsOptions
 {
+    // Operating system
     std::string getComputerName();
-//    std::string getUserName(); // не реализована
+    std::string getUserName(); // не реализована
     std::string getWindowsFolder();
     std::string getSystemFolder();
+    std::string getLocalTimeAndDate();
+    std::string isUserAnAdministrator();
+
+    // User Locale Settings
+    unsigned int getCodePage();
+
+    // Hardware
     int getNumberOfProcessors();
 }
 

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QSplashScreen>
+#include <Windows.h>
 
 int main(int argc, char *argv[])
 {
@@ -8,12 +9,15 @@ int main(int argc, char *argv[])
 
     QPixmap image(":/resources/img/splashscreen.png");
     QSplashScreen splashScreen(image);
-    QTime stopwatch;
-    const int splashScreenDuration = 3000;
+
+    int timeIntervalsCounter = 0;
+    constexpr int cycleSleepTime = 50;
+    constexpr int splashScreenDuration = 3000 / cycleSleepTime;
     splashScreen.show();
-    stopwatch.start();
-    while (stopwatch.elapsed() < splashScreenDuration)
+    while (timeIntervalsCounter < splashScreenDuration)
     {
+        Sleep(cycleSleepTime);
+        ++timeIntervalsCounter;
     }
 
     MainWindow mainWindow;

@@ -9,7 +9,8 @@ class OuterFileIncluder : public FileSystemWorkModule
     Q_OBJECT
 
 public:
-    OuterFileIncluder(const QString &title = "Выбор файла", const QString &extensionFilter = QString());
+    OuterFileIncluder(const QString &title = "Выбор файла", const QString &extensionFilter = "");
+
     bool isActive() const;
 
 protected:
