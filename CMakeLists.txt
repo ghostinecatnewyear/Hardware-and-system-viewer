@@ -15,19 +15,23 @@ find_package(Qt5 REQUIRED COMPONENTS
 set(project_headers 
 	src/aboutwindow.h 
 	src/datacollector.h 
+	src/datahandler.h 
 	src/filesystemworkmodule.h 
 	src/mainwindow.h 
 	src/outerfileincluder.h 
+	src/webengineview.h 
 	src/windowsoptions.h
 )
 	
 set(project_sources 
 	src/aboutwindow.cpp 
 	src/datacollector.cpp 
+	src/datahandler.cpp 
 	src/filesystemworkmodule.cpp 
 	src/main.cpp 
 	src/mainwindow.cpp 
 	src/outerfileincluder.cpp 
+	src/webengineview.cpp 
 	src/windowsoptions.cpp
 )
 

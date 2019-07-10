@@ -2,7 +2,8 @@
 #include <QGridLayout>
 
 AboutWindow::AboutWindow(const QString &title)
-    : QFrame()
+    : QFrame(),
+      _closeButton("Закрыть")
 {
     setWindowTitle(title);
     setFixedSize(500, 300);
@@ -12,7 +13,6 @@ AboutWindow::AboutWindow(const QString &title)
     _information.setText("[Информация о программе]");
     layout->addWidget(&_information, 0, 0, 9, 5);
 
-    _closeButton.setText("Закрыть");
-    connect(&_closeButton, SIGNAL(clicked()), this, SLOT(hide()));
+    connect(&_closeButton, &QPushButton::clicked, this, &QFrame::hide);
     layout->addWidget(&_closeButton, 9, 4, 1, 1);
 }

@@ -5,7 +5,7 @@
 #include <QMenuBar>
 #include "outerfileincluder.h"
 #include <QPushButton>
-#include <QWebEngineView>
+#include "webengineview.h"
 #include "aboutwindow.h"
 
 class MainWindow : public QMainWindow
@@ -21,7 +21,7 @@ private:
     OuterFileIncluder _scriptsIncluder;
     QPushButton       _collectDataButton;
     QLabel            _warningMessage;
-    QWebEngineView    _dataVisualizer;
+    WebEngineView     _dataVisualizer;
     AboutWindow       _aboutWindow;
 
 private slots:

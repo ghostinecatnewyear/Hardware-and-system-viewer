@@ -1,33 +1,34 @@
 #include "datacollector.h"
 #include "windowsoptions.h"
+#include "datahandler.h"
 
 using namespace WindowsOptions;
 
 void DataCollector::collectData(const QString &outFilePath,
-                                const QString &stylesFilePath,  const bool doIncludeStyles,
-                                const QString &scriptsFilePath, const bool doIncludeScripts)
+                                const QString &stylesFilePath,
+                                const QString &scriptsFilePath)
 {
-    QFile outFile(outFilePath);
-    outFile.open(QIODevice::WriteOnly);
+    DataHandler dataHandler(outFilePath, stylesFilePath, scriptsFilePath);
 
-    if (doIncludeStyles)
-    {
-        outFile.write(("[Внешний файл CSS \""
-                       + stylesFilePath  + "\" подключён]<br><br>").toUtf8());
-    }
-    if (doIncludeScripts)
-    {
-        outFile.write(("[Внешний файл JavaScript \""
-                       + scriptsFilePath + "\" подключён]<br><br>").toUtf8());
-    }
+    std::vector<Property> properties;
+    constexpr int maximumPropertiesInGroup = 18;
+    properties.reserve(maximumPropertiesInGroup);
 
-    outFile.write("Operating System<br>");
-    outFile.write(QString::fromStdString("Computer Name "  + getComputerName()  + "<br>").toUtf8());
-    outFile.write(QString::fromStdString("Windows Folder " + getWindowsFolder() + "<br>").toUtf8());
-    outFile.write(QString::fromStdString("System Folder "  + getSystemFolder()  + "<br>").toUtf8());
+    properties.push_back(Property("Computer Name",       QString::fromStdString(getComputerName()      )));
+    properties.push_back(Property("User Name",           QString::fromStdString(getUserName()          )));
+    properties.push_back(Property("Windows Folder",      QString::fromStdString(getWindowsFolder()     )));
+    properties.push_back(Property("System Folder",       QString::fromStdString(getSystemFolder()      )));
+    properties.push_back(Property("Local Time and Date", QString::fromStdString(getLocalTimeAndDate()  )));
+    properties.push_back(Property("Administrator",       QString::fromStdString(isUserAnAdministrator())));
+    dataHandler.addGroup("Operating System", properties);
 
-    outFile.write("<br>Hardware<br>");
-    outFile.write(("Number of Processors " + QString::number(getNumberOfProcessors()) + "<br>").toUtf8());
+    properties.clear();
+    properties.push_back(Property("Code Page", QString::number(getCodePage())));
+    dataHandler.addGroup("User Locale Settings", properties);
 
-    outFile.close();
+    properties.clear();
+    properties.push_back(Property("Number of Processors", QString::number(getNumberOfProcessors())));
+    dataHandler.addGroup("Hardware", properties);
+
+    dataHandler.endWorkWithFile();
 }

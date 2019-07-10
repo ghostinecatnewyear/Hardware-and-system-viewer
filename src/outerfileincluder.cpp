@@ -1,14 +1,15 @@
 #include "outerfileincluder.h"
-#include <QHBoxLayout>
 #include <QFileDialog>
+#include <QLayout>
 
 OuterFileIncluder::OuterFileIncluder(const QString &title, const QString &extensionFilter)
-    : FileSystemWorkModule(title, extensionFilter)
+    : FileSystemWorkModule(title, extensionFilter),
+      _activity("Подключить")
 {
-    _activity.setText("Подключить");
-    connect(&_activity, SIGNAL(clicked()), this, SLOT(onSwitchActivity()));
+    connect(&_activity, &QCheckBox::clicked, this, &OuterFileIncluder::onSwitchActivity);
     onSwitchActivity();
-    _layout.addWidget(&_activity);
+    QLayout *layout = this->layout();
+    layout->addWidget(&_activity);
 }
 
 bool OuterFileIncluder::isActive() const
@@ -21,6 +22,7 @@ Q_SLOT void OuterFileIncluder::onSpecifyPath()
     QString outerFilePath(QFileDialog::getOpenFileName(nullptr, "Выбор файла", "C:/", _extensionFilter));
     if (!QFile::exists(outerFilePath))
         return;
+
     _path.setText(outerFilePath);
 }
 

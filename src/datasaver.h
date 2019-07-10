@@ -13,7 +13,7 @@ class DataSaver : public FileSystemWorkModule
     Q_OBJECT
 
 public:
-    DataSaver(const QString &title = "Сохранение файла", const QString &extensionFilter = QString());
+    DataSaver(const QString &title = "Сохранение файла", const QString &extensionFilter = "");
 
 protected slots:
     virtual void onSpecifyPath() override;
