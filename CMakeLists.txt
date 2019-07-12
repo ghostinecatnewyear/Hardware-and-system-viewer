@@ -14,23 +14,23 @@ find_package(Qt5 REQUIRED COMPONENTS
 	
 set(project_headers 
 	src/aboutwindow.h 
-	src/datacollector.h 
-	src/datahandler.h 
+	src/datahandlertohtml.h 
 	src/filesystemworkmodule.h 
 	src/mainwindow.h 
 	src/outerfileincluder.h 
+	src/systemdatacollector.h 
 	src/webengineview.h 
 	src/windowsoptions.h
 )
 	
 set(project_sources 
 	src/aboutwindow.cpp 
-	src/datacollector.cpp 
-	src/datahandler.cpp 
+	src/datahandlertohtml.cpp 
 	src/filesystemworkmodule.cpp 
 	src/main.cpp 
 	src/mainwindow.cpp 
 	src/outerfileincluder.cpp 
+	src/systemdatacollector.cpp 
 	src/webengineview.cpp 
 	src/windowsoptions.cpp
 )
@@ -40,11 +40,15 @@ set(project_resources resources.qrc)
 qt5_wrap_cpp(project_mocs ${project_headers})
 source_group("MOC Files" FILES ${project_mocs})
 
+qt5_add_resources(project_auto_resources ${project_resources})
+source_group("Resources Files" FILES ${project_auto_resources})
+
 add_executable(${PROJECT_NAME} WIN32 
 	${project_headers} 
 	${project_sources} 
 	${project_resources} 
-	${project_mocs}
+	${project_mocs} 
+	${project_auto_resources}
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC 

@@ -7,11 +7,6 @@ WebEngineView::WebEngineView()
     connect(&_page, &QWebEnginePage::loadFinished, this, &WebEngineView::onLoadFinished);
 }
 
-void WebEngineView::loadPage(const QString &url)
-{
-    _page.load(QUrl::fromLocalFile(url));
-}
-
 void WebEngineView::updateFarParent()
 {
     QWidget *widget = nullptr;

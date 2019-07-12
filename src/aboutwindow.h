@@ -2,17 +2,19 @@
 #define ABOUTWINDOW_H
 
 #include <QFrame>
-#include <QLabel>
-#include <QPushButton>
+
+class QLabel;
+class QPushButton;
 
 class AboutWindow : public QFrame
 {
 public:
     AboutWindow(const QString &title = "О программе");
+    ~AboutWindow();
 
 private:
-    QLabel      _information;
-    QPushButton _closeButton;
+    QLabel      *_information;
+    QPushButton *_closeButton;
 };
 
 #endif // ABOUTWINDOW_H

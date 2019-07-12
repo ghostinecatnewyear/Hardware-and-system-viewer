@@ -2,11 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMenuBar>
-#include "outerfileincluder.h"
-#include <QPushButton>
-#include "webengineview.h"
-#include "aboutwindow.h"
+
+class QMenuBar;
+class OuterFileIncluder;
+class QPushButton;
+class QLabel;
+class WebEngineView;
+class AboutWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -14,15 +16,18 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
 
 private:
-    QMenuBar          _menuBar;
-    OuterFileIncluder _stylesIncluder;
-    OuterFileIncluder _scriptsIncluder;
-    QPushButton       _collectDataButton;
-    QLabel            _warningMessage;
-    WebEngineView     _dataVisualizer;
-    AboutWindow       _aboutWindow;
+    QMenuBar          *_menuBar;
+    OuterFileIncluder *_stylesIncluder;
+    OuterFileIncluder *_scriptsIncluder;
+    QPushButton       *_collectDataButton;
+    QLabel            *_warningMessage;
+    WebEngineView     *_dataVisualizer;
+    AboutWindow       *_aboutWindow;
+
+    void initializeMenuBar();
 
 private slots:
     void onCollectData();
