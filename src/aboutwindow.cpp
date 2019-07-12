@@ -1,18 +1,26 @@
 #include "aboutwindow.h"
+#include <QLabel>
+#include <QPushButton>
 #include <QGridLayout>
 
 AboutWindow::AboutWindow(const QString &title)
     : QFrame(),
-      _closeButton("Закрыть")
+      _information(new QLabel), _closeButton(new QPushButton("Закрыть"))
 {
     setWindowTitle(title);
     setFixedSize(500, 300);
 
-    QGridLayout *layout = new QGridLayout(this);
+    auto layout = new QGridLayout(this);
 
-    _information.setText("[Информация о программе]");
-    layout->addWidget(&_information, 0, 0, 9, 5);
+    _information->setText("[Информация о программе]");
+    layout->addWidget(_information, 0, 0, 9, 5);
 
-    connect(&_closeButton, &QPushButton::clicked, this, &QFrame::hide);
-    layout->addWidget(&_closeButton, 9, 4, 1, 1);
+    connect(_closeButton, &QPushButton::clicked, this, &QFrame::hide);
+    layout->addWidget(_closeButton, 9, 4, 1, 1);
+}
+
+AboutWindow::~AboutWindow()
+{
+    delete _information;
+    delete _closeButton;
 }

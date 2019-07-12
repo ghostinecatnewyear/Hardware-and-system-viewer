@@ -2,8 +2,10 @@
 #define FILESYSTEMWORKMODULE_H
 
 #include <QGroupBox>
-#include <QLineEdit>
-#include <QPushButton>
+
+class QLineEdit;
+class QPushButton;
+class QString;
 
 class FileSystemWorkModule : public QGroupBox
 {
@@ -11,14 +13,14 @@ class FileSystemWorkModule : public QGroupBox
 
 public:
     FileSystemWorkModule(const QString &title, const QString &extensionFilter);
+    ~FileSystemWorkModule();
 
     QString getPath() const;
-    void setExtensionFilter(const QString &filter);
 
 protected:
-    QLineEdit   _path;
-    QPushButton _specifyPathButton;
-    QString     _extensionFilter;
+    QLineEdit   *_path;
+    QPushButton *_specifyPathButton;
+    QString     *_extensionFilter;
 
 protected slots:
     virtual void onSpecifyPath() = 0;

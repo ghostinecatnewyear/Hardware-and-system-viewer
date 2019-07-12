@@ -10,8 +10,6 @@ class WebEngineView : public QWebEngineView
 public:
     WebEngineView();
 
-    void loadPage(const QString &url);
-
 private:
     QWebEnginePage _page;
     bool _isPageLoaded = false;
