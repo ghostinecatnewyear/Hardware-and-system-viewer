@@ -43,7 +43,8 @@ void SystemDataCollector::collectUserLocaleSettingsData(DataHandlerToHTML &dataH
 {
     dataHandler.beginGroup("User Locale Settings");
 
-    dataHandler.addProperty("Code Page", QString::number(getCodePage()), true);
+    dataHandler.addProperty("Code Page",     QString::number(getCodePage()   ), true);
+    dataHandler.addProperty("OEM Code Page", QString::number(getOEMCodePage()), true);
 
     dataHandler.endGroup();
 }
@@ -52,6 +53,9 @@ void SystemDataCollector::collectHardwareData(DataHandlerToHTML &dataHandler)
 {
     dataHandler.beginGroup("Hardware");
 
+    dataHandler.addProperty("Processor Family",     QString::number(getProcessorFamily()   ), true);
+    dataHandler.addProperty("Processor Model",      QString::number(getProcessorModel()    ), true);
+    dataHandler.addProperty("Processor Stepping",   QString::number(getProcessorStepping() ), true);
     dataHandler.addProperty("Number of Processors", QString::number(getNumberOfProcessors()), true);
 
     int64_t totalPysical;
