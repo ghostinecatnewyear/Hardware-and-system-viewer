@@ -1,11 +1,12 @@
 #include "windowsoptions.h"
-#include <cmath>
-#include <cstdint>
 #include <Windows.h>
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Gdi32.lib")
 #include <ShlObj.h>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
 
 double WindowsOptions::fromBytesToGigabytes(const int64_t bytes)
 {
@@ -70,40 +71,24 @@ std::string WindowsOptions::getSystemFolder()
 
 std::string WindowsOptions::getLocalTime()
 {
-    SYSTEMTIME localTime;
-    GetLocalTime(&localTime);
+    SYSTEMTIME localTimeAndDate;
+    GetLocalTime(&localTimeAndDate);
 
-    std::string time;
-    time.reserve(WindowsOptions::timeStringLength);
+    char time[WindowsOptions::timeStringLength + 1];
+    sprintf(time, "%d:%02d:%02d", localTimeAndDate.wHour, localTimeAndDate.wMinute, localTimeAndDate.wSecond);
 
-    time += std::to_string(localTime.wHour);
-    time += ":";
-    time += (localTime.wMinute < 10)? "0" : "";
-    time += std::to_string(localTime.wMinute);
-    time += ":";
-    time += (localTime.wSecond < 10)? "0" : "";
-    time += std::to_string(localTime.wSecond);
-
-    return time;
+    return std::string(time);
 }
 
 std::string WindowsOptions::getLocalDate()
 {
-    SYSTEMTIME localTime;
-    GetLocalTime(&localTime);
+    SYSTEMTIME localTimeAndDate;
+    GetLocalTime(&localTimeAndDate);
 
-    std::string date;
-    date.reserve(WindowsOptions::dateStringLength);
+    char date[WindowsOptions::dateStringLength + 1];
+    sprintf(date, "%02d.%02d.%d", localTimeAndDate.wDay, localTimeAndDate.wMonth, localTimeAndDate.wYear);
 
-    date += (localTime.wDay < 10)? "0" : "";
-    date += std::to_string(localTime.wDay);
-    date += ".";
-    date += (localTime.wMonth < 10)? "0" : "";
-    date += std::to_string(localTime.wMonth);
-    date += ".";
-    date += std::to_string(localTime.wYear);
-
-    return date;
+    return std::string(date);
 }
 
 bool WindowsOptions::isUserAnAdministrator()
@@ -116,12 +101,46 @@ unsigned int WindowsOptions::getCodePage()
     return GetACP();
 }
 
-unsigned long WindowsOptions::getNumberOfProcessors()
+unsigned int WindowsOptions::getOEMCodePage()
+{
+    return GetOEMCP();
+}
+
+int WindowsOptions::getProcessorFamily()
 {
     SYSTEM_INFO systemInformation;
     GetSystemInfo(&systemInformation);
 
-    return systemInformation.dwNumberOfProcessors;
+    return systemInformation.wProcessorArchitecture;
+}
+
+int WindowsOptions::getProcessorModel()
+{
+    SYSTEM_INFO systemInformation;
+    GetSystemInfo(&systemInformation);
+
+    WORD model = systemInformation.wProcessorRevision;
+    model >>= 8;
+
+    return model;
+}
+
+int WindowsOptions::getProcessorStepping()
+{
+    SYSTEM_INFO systemInformation;
+    GetSystemInfo(&systemInformation);
+
+    WORD stepping = systemInformation.wProcessorRevision & 0b1111'1111;
+
+    return stepping;
+}
+
+int WindowsOptions::getNumberOfProcessors()
+{
+    SYSTEM_INFO systemInformation;
+    GetSystemInfo(&systemInformation);
+
+    return static_cast<int>(systemInformation.dwNumberOfProcessors);
 }
 
 void WindowsOptions::getPhysicalMemorySize(int64_t &totalSize, int64_t &availableSize)
@@ -224,18 +243,18 @@ std::string WindowsOptions::getDiskType(const std::string &diskName)
 
     switch (driveType)
     {
-    case 2:
+    case DRIVE_REMOVABLE:
         return "REMOVABLE";
-    case 3:
+    case DRIVE_FIXED:
         return "FIXED";
-    case 4:
+    case DRIVE_REMOTE:
         return "REMOTE";
-    case 5:
+    case DRIVE_CDROM:
         return "CD-ROM";
-    case 6:
+    case DRIVE_RAMDISK:
         return "RAM";
-    case 0:
-    case 1:
+    case DRIVE_UNKNOWN:
+    case DRIVE_NO_ROOT_DIR:
     default:
         return "UNKNOWN";
     }

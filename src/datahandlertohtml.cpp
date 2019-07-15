@@ -39,7 +39,7 @@ void DataHandlerToHTML::beginGroup(const QString &name)
     _file->write("<DIV class=\"group\">\n");
 
     _file->write("\t\t\t<DIV class=\"group-name\">");
-    _file->write(qPrintable(name));
+    _file->write(name.toUtf8());
     _file->write("</DIV>\n");
 }
 
@@ -60,11 +60,11 @@ void DataHandlerToHTML::addProperty(const QString &name, const QString &value, c
     _file->write("\t\t\t<SPAN class=\"property\">\n");
 
     _file->write("\t\t\t\t<SPAN class=\"property-name\">");
-    _file->write(qPrintable(name + " "));
+    _file->write(QString("%1 ").arg(name).toUtf8());
     _file->write("</SPAN>\n");
 
     _file->write("\t\t\t\t<SPAN class=\"property-value\">");
-    _file->write(qPrintable(value));
+    _file->write(value.toUtf8());
     _file->write("</SPAN>\n");
 
     _file->write("\t\t\t</SPAN>");
@@ -85,11 +85,11 @@ void DataHandlerToHTML::addHeader()
 
     if (!_stylesFilePath->isEmpty())
     {
-        _file->write(qPrintable("\t\t<LINK href=\"" + *_stylesFilePath + "\" rel=\"stylesheet\">\n"));
+        _file->write(QString("\t\t<LINK href=\"%1\" rel=\"stylesheet\">\n").arg(*_stylesFilePath).toUtf8());
     }
     if (!_scriptsFilePath->isEmpty())
     {
-        _file->write(qPrintable("\t\t<SCRIPT src=\"" + *_scriptsFilePath + "\">"));
+        _file->write(QString("\t\t<SCRIPT src=\"%1\">").arg(*_scriptsFilePath).toUtf8());
         _file->write("</SCRIPT>\n");
     }
 
