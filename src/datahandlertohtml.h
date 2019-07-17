@@ -15,7 +15,7 @@ public:
     void endWorkWithFile();
     void beginGroup(const QString &name);
     void endGroup();
-    void addProperty(const QString &name, const QString &value, const bool doLineFeed = false);
+    void addProperty(const QString &name, const QString &value, const bool doLineFeed);
 
 private:
     QFile   *_file;
