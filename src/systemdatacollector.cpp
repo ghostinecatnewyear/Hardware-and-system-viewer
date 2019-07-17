@@ -25,6 +25,16 @@ void SystemDataCollector::collectOperatingSystemData(DataHandlerToHTML &dataHand
 {
     dataHandler.beginGroup("Operating System");
 
+    dataHandler.addProperty("OS Name", QString::fromStdString(getOSName()), true);
+
+    int minorVersion;
+    int majorVersion;
+    int buildNumber;
+    getOSVersion(&minorVersion, &majorVersion, &buildNumber);
+    QString formattedString;
+    formattedString.sprintf("Version %d.%d Build (%d)", minorVersion, majorVersion, buildNumber);
+    dataHandler.addProperty("OS Info", formattedString, true);
+
     dataHandler.addProperty("Computer Name",  QString::fromStdString(getComputerName() ), true);
     dataHandler.addProperty("User Name",      QString::fromStdString(getUserName()     ), true);
     dataHandler.addProperty("Windows Folder", QString::fromStdString(getWindowsFolder()), true);
@@ -43,8 +53,18 @@ void SystemDataCollector::collectUserLocaleSettingsData(DataHandlerToHTML &dataH
 {
     dataHandler.beginGroup("User Locale Settings");
 
-    dataHandler.addProperty("Code Page",     QString::number(getCodePage()   ), true);
-    dataHandler.addProperty("OEM Code Page", QString::number(getOEMCodePage()), true);
+    dataHandler.addProperty("Code Page",     QString::number(getCodePage()   ),        true);
+    dataHandler.addProperty("OEM Code Page", QString::number(getOEMCodePage()),        true);
+    dataHandler.addProperty("Country Code",  QString::number(getCountryCode()),        true);
+    dataHandler.addProperty("Country",       QString::fromStdWString(getCountry()   ), true);
+    dataHandler.addProperty("Language",      QString::fromStdWString(getLanguage()  ), true);
+    dataHandler.addProperty("Time Format",   QString::fromStdWString(getTimeFormat()), true);
+    dataHandler.addProperty("Date Format",   QString::fromStdWString(getDateFormat()), true);
+    dataHandler.addProperty("Currency",      QString::fromStdWString(getCurrency()  ), true);
+
+    QString formattedString;
+    formattedString.sprintf("%d-hour format", getTimeFormatSpecifier());
+    dataHandler.addProperty("Time Format Specifier", formattedString, true);
 
     dataHandler.endGroup();
 }
@@ -60,46 +80,37 @@ void SystemDataCollector::collectHardwareData(DataHandlerToHTML &dataHandler)
 
     int64_t totalPysical;
     int64_t availablePhysical;
-    getPhysicalMemorySize(totalPysical, availablePhysical);
-    dataHandler.addProperty("Physical Memory",
-                            QString::number(fromBytesToGigabytes(totalPysical)) + " GB",
-                            true);
-    dataHandler.addProperty("Physical Memory Available",
-                            QString::number(fromBytesToGigabytes(availablePhysical)) + " GB",
-                            true);
+    getPhysicalMemorySize(&totalPysical, &availablePhysical);
+    QString formattedString;
+    formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalPysical)     );
+    dataHandler.addProperty("Physical Memory",           formattedString, true);
+    formattedString.sprintf("%lf GB", fromBytesToGigabytes(availablePhysical));
+    dataHandler.addProperty("Physical Memory Available", formattedString, true);
 
     int64_t totalVirtual;
     int64_t availableVirtual;
-    getVirtualMemorySize(totalVirtual, availableVirtual);
-    dataHandler.addProperty("Virtual Memory",
-                            QString::number(fromBytesToGigabytes(totalVirtual)) + " GB",
-                            true);
-    dataHandler.addProperty("Virtual Memory Available",
-                            QString::number(fromBytesToGigabytes(availableVirtual)) + " GB",
-                            true);
+    getVirtualMemorySize(&totalVirtual, &availableVirtual);
+    formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalVirtual)    );
+    dataHandler.addProperty("Virtual Memory",           formattedString, true);
+    formattedString.sprintf("%lf GB", fromBytesToGigabytes(availableVirtual));
+    dataHandler.addProperty("Virtual Memory Available", formattedString, true);
 
     int64_t totalPageFile;
     int64_t availablePageFile;
-    getPageFileSize(totalPageFile, availablePageFile);
-    dataHandler.addProperty("Page File",
-                            QString::number(fromBytesToGigabytes(totalPageFile)) + " GB",
-                            true);
-    dataHandler.addProperty("Page File Available",
-                            QString::number(fromBytesToGigabytes(availablePageFile)) + " GB",
-                            true);
+    getPageFileSize(&totalPageFile, &availablePageFile);
+    formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalPageFile)    );
+    dataHandler.addProperty("Page File",           formattedString, true);
+    formattedString.sprintf("%lf GB", fromBytesToGigabytes(availablePageFile));
+    dataHandler.addProperty("Page File Available", formattedString, true);
 
     int screenWidth;
     int screenHeight;
-    getFullScreenSize(screenWidth, screenHeight);
-    dataHandler.addProperty("Full Screen Size",
-                            QString::number(screenWidth) + "x" + QString::number(screenHeight),
-                            true);
-    dataHandler.addProperty("Bit Per Pixel",
-                            QString::number(getBitsPerPixel()),
-                            true);
-    dataHandler.addProperty("Number of Monitors",
-                            QString::number(getNumberOfMonitors()),
-                            true);
+    getFullScreenSize(&screenWidth, &screenHeight);
+    formattedString.sprintf("%dx%d", screenWidth, screenHeight);
+    dataHandler.addProperty("Full Screen Size", formattedString, true);
+
+    dataHandler.addProperty("Bit Per Pixel",      QString::number(getBitsPerPixel()    ), true);
+    dataHandler.addProperty("Number of Monitors", QString::number(getNumberOfMonitors()), true);
 
     dataHandler.endGroup();
 }
@@ -116,16 +127,14 @@ void SystemDataCollector::collectDisksData(DataHandlerToHTML &dataHandler)
 
         int64_t totalDiskSize;
         int64_t freeDiskSize;
-        getDiskSize(disk, totalDiskSize, freeDiskSize);
-        dataHandler.addProperty("Size",
-                                QString::number(fromBytesToGigabytes(totalDiskSize)) + " GB",
-                                false);
-        dataHandler.addProperty("Free Size",
-                                QString::number(fromBytesToGigabytes(freeDiskSize))  + " GB",
-                                false);
-        dataHandler.addProperty("File System",
-                                QString::fromStdString(getDiskFileSystem(disk)),
-                                true);
+        getDiskSize(disk, &totalDiskSize, &freeDiskSize);
+        QString formattedString;
+        formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalDiskSize));
+        dataHandler.addProperty("Size",      formattedString, false);
+        formattedString.sprintf("%lf GB", fromBytesToGigabytes(freeDiskSize));
+        dataHandler.addProperty("Free Size", formattedString, false);
+
+        dataHandler.addProperty("File System", QString::fromStdString(getDiskFileSystem(disk)), true);
     }
 
     dataHandler.endGroup();

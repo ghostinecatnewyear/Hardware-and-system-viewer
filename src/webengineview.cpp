@@ -12,7 +12,7 @@ void WebEngineView::updateFarParent()
     QWidget *widget = nullptr;
     QWidget *next   = this;
 
-    while (next)
+    while (next != nullptr)
     {
         widget = next;
         next   = next->parentWidget();
