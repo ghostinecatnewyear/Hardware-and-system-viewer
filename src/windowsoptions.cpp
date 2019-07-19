@@ -1,10 +1,8 @@
 #include "windowsoptions.h"
 #include <Windows.h>
-#include <VersionHelpers.h>
-#pragma comment(lib, "Advapi32.lib")
-#pragma comment(lib, "User32.lib")
-#pragma comment(lib, "Gdi32.lib")
+#include <intrin.h>
 #include <ShlObj.h>
+#include <memory>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -14,84 +12,47 @@ double WindowsOptions::fromBytesToGigabytes(const int64_t bytes)
     return bytes / pow(1024, 3);
 }
 
-std::string WindowsOptions::getWindowsVersion()
-{
-    int majorVersion;
-    int minorVersion;
-    getOSVersion(&majorVersion, &minorVersion, nullptr);
-
-    bool isWindowsServer = IsWindowsServer();
-    switch (majorVersion)
-    {
-    case 5:
-        switch (minorVersion)
-        {
-        case 0:
-            return "2000";
-        case 1:
-            return "XP";
-        case 2:
-            if (isWindowsServer)
-                return "Server 2003/2003 R2";
-            else
-                return "XP 64-Bit Edition";
-        default:
-            return "Unknown";
-        }
-    case 6:
-        switch (minorVersion)
-        {
-        case 0:
-            if (isWindowsServer)
-                return "Server 2008";
-            else
-                return "Vista";
-        case 1:
-            if (isWindowsServer)
-                return "Server 2008 R2";
-            else
-                return "7";
-        case 2:
-            if (isWindowsServer)
-                return "Server 2012";
-            else
-                return "8";
-        case 3:
-            if (isWindowsServer)
-                return "Server 2012 R2";
-            else
-                return "8.1";
-        default:
-            return "Unknown";
-        }
-    case 10:
-        if (isWindowsServer)
-            return "Server 2016/2019";
-        else
-            return "10";
-    default:
-        return "Unknown";
-    }
-}
-
 bool WindowsOptions::is64BitSystem()
 {
     SYSTEM_INFO info;
-    GetNativeSystemInfo(&info);
 
-    return ((info.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_INTEL)? true : false);
+    GetSystemInfo(&info);
+
+    return (info.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_INTEL);
 }
 
 std::string WindowsOptions::getOSName()
 {
-    std::string osName = "Microsoft Windows ";
-    osName += getWindowsVersion();
-    osName += is64BitSystem()? " 64-bit" : " 32-bit";
+    HKEY key;
 
-    return osName;
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+                                       0,
+                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+                                       &key))
+    {
+        return "Unknown";
+    }
+
+    DWORD size = 128;
+    std::unique_ptr<CHAR> osName(new CHAR[size]);
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key,
+                                          "ProductName",
+                                          NULL,
+                                          NULL,
+                                          reinterpret_cast<LPBYTE>(osName.get()),
+                                          &size))
+    {
+        return "Unknown";
+    }
+
+    RegCloseKey(key);
+
+    return osName.get();
 }
 
-void WindowsOptions::getOSVersion(int *majorVersion, int *minorVersion, int *buildNumber)
+void WindowsOptions::getOSVersion(int *const majorVersion, int *const minorVersion, int *const buildNumber)
 {
     NTSTATUS(WINAPI *RtlGetVersion)(LPOSVERSIONINFO);
     *(FARPROC*)&RtlGetVersion = GetProcAddress(GetModuleHandleA("ntdll"), "RtlGetVersion");
@@ -122,57 +83,45 @@ void WindowsOptions::getOSVersion(int *majorVersion, int *minorVersion, int *bui
 std::string WindowsOptions::getComputerName()
 {
     DWORD length = 64;
-    auto computerName = static_cast<LPSTR>(HeapAlloc(GetProcessHeap(), 0, sizeof(CHAR) * length));
+    std::unique_ptr<CHAR> computerName(new CHAR[length]);
 
-    if (!GetComputerNameA(computerName, &length))
+    if (!GetComputerNameA(computerName.get(), &length))
         return "Unknown";
 
-    std::string name(computerName);
-    HeapFree(GetProcessHeap(), 0, computerName);
-
-    return name;
+    return computerName.get();
 }
 
 std::string WindowsOptions::getUserName()
 {
     DWORD length = 64;
-    auto userName = static_cast<LPSTR>(HeapAlloc(GetProcessHeap(), 0, sizeof(CHAR) * length));
+    std::unique_ptr<CHAR> userName(new CHAR[length]);
 
-    if (!GetUserNameA(userName, &length))
+    if (!GetUserNameA(userName.get(), &length))
         return "Unknown";
 
-    std::string name(userName);
-    HeapFree(GetProcessHeap(), 0, userName);
-
-    return name;
+    return userName.get();
 }
 
 std::string WindowsOptions::getWindowsFolder()
 {
     UINT length = 512;
-    auto folderPath = static_cast<LPSTR>(HeapAlloc(GetProcessHeap(), 0, sizeof(CHAR) * length));
+    std::unique_ptr<CHAR> folderPath(new CHAR[length]);
 
-    if (GetWindowsDirectoryA(folderPath, length) == 0)
+    if (0 == GetWindowsDirectoryA(folderPath.get(), length))
         return "Unknown";
 
-    std::string path(folderPath);
-    HeapFree(GetProcessHeap(), 0, folderPath);
-
-    return path;
+    return folderPath.get();
 }
 
 std::string WindowsOptions::getSystemFolder()
 {
     UINT length = 512;
-    auto folderPath = static_cast<LPSTR>(HeapAlloc(GetProcessHeap(), 0, sizeof(CHAR) * length));
+    std::unique_ptr<CHAR> folderPath(new CHAR[length]);
 
-    if (GetSystemDirectoryA(folderPath, length) == 0)
+    if (0 == GetSystemDirectoryA(folderPath.get(), length))
         return "Unknown";
 
-    std::string path(folderPath);
-    HeapFree(GetProcessHeap(), 0, folderPath);
-
-    return path;
+    return folderPath.get();
 }
 
 std::string WindowsOptions::getLocalTime()
@@ -199,7 +148,7 @@ std::string WindowsOptions::getLocalDate()
 
 bool WindowsOptions::isUserAnAdministrator()
 {
-    return (IsUserAnAdmin())? true : false;
+    return IsUserAnAdmin();
 }
 
 int WindowsOptions::getCodePage()
@@ -216,14 +165,14 @@ int WindowsOptions::getCountryCode()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
 
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return 0;
 
     int countryCode;
-    if (GetLocaleInfoEx(localeName,
-                        LOCALE_RETURN_NUMBER | LOCALE_IDIALINGCODE,
-                        reinterpret_cast<LPWSTR>(&countryCode),
-                        sizeof(countryCode)) == 0)
+    if (0 == GetLocaleInfoEx(localeName,
+                             LOCALE_RETURN_NUMBER | LOCALE_IDIALINGCODE,
+                             reinterpret_cast<LPWSTR>(&countryCode),
+                             sizeof(countryCode)))
     {
         return 0;
     }
@@ -235,12 +184,12 @@ std::wstring WindowsOptions::getCountry()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
 
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return L"Unknown";
 
     constexpr int length = 64;
     WCHAR country[length];
-    if (GetLocaleInfoEx(localeName, LOCALE_SLOCALIZEDCOUNTRYNAME, country, length) == 0)
+    if (0 == GetLocaleInfoEx(localeName, LOCALE_SLOCALIZEDCOUNTRYNAME, country, length))
         return L"Unknown";
 
     return country;
@@ -249,12 +198,12 @@ std::wstring WindowsOptions::getCountry()
 std::wstring WindowsOptions::getLanguage()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return L"Unknown";
 
     constexpr int length = 64;
     WCHAR language[length];
-    if (GetLocaleInfoEx(localeName, LOCALE_SLOCALIZEDLANGUAGENAME, language, length) == 0)
+    if (0 == GetLocaleInfoEx(localeName, LOCALE_SLOCALIZEDLANGUAGENAME, language, length))
         return L"Unknown";
 
     return language;
@@ -263,12 +212,12 @@ std::wstring WindowsOptions::getLanguage()
 std::wstring WindowsOptions::getTimeFormat()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return L"Unknown";
 
     constexpr int length = 32;
     WCHAR timeFormat[length];
-    if (GetLocaleInfoEx(localeName, LOCALE_STIMEFORMAT, timeFormat, length) == 0)
+    if (0 == GetLocaleInfoEx(localeName, LOCALE_STIMEFORMAT, timeFormat, length))
         return L"Unknown";
 
     return timeFormat;
@@ -277,12 +226,12 @@ std::wstring WindowsOptions::getTimeFormat()
 std::wstring WindowsOptions::getDateFormat()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return L"Unknown";
 
     constexpr int length = 32;
     WCHAR dateFormat[length];
-    if (GetLocaleInfoEx(localeName, LOCALE_SLONGDATE, dateFormat, length) == 0)
+    if (0 == GetLocaleInfoEx(localeName, LOCALE_SLONGDATE, dateFormat, length))
         return L"Unknown";
 
     return dateFormat;
@@ -291,12 +240,12 @@ std::wstring WindowsOptions::getDateFormat()
 std::wstring WindowsOptions::getCurrency()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return L"Unknown";
 
     constexpr int length = 8;
     WCHAR currency[length];
-    if (GetLocaleInfoEx(localeName, LOCALE_SCURRENCY, currency, length) == 0)
+    if (0 == GetLocaleInfoEx(localeName, LOCALE_SCURRENCY, currency, length))
         return L"Unknown";
 
     return currency;
@@ -305,7 +254,7 @@ std::wstring WindowsOptions::getCurrency()
 int WindowsOptions::getTimeFormatSpecifier()
 {
     WCHAR localeName[LOCALE_NAME_MAX_LENGTH];
-    if (GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) == 0)
+    if (0 == GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH))
         return 0;
 
     int timeFormat;
@@ -317,6 +266,28 @@ int WindowsOptions::getTimeFormatSpecifier()
         return 0;
 
     return ((timeFormat == 0)? 12 : 24);
+}
+
+std::string WindowsOptions::getProcessorName()
+{
+    int cpuInfo[4];
+    __cpuid(cpuInfo, 0x80000000);
+    unsigned int nExIds = cpuInfo[0];
+
+    char cpuName[128];
+    for (unsigned int i = 0x80000000; i <= nExIds; ++i)
+    {
+        __cpuid(cpuInfo, i);
+
+        if  (i == 0x80000002)
+            memcpy(cpuName,      cpuInfo, sizeof(cpuInfo));
+        else if (i == 0x80000003)
+            memcpy(cpuName + 16, cpuInfo, sizeof(cpuInfo));
+        else if(i == 0x80000004)
+            memcpy(cpuName + 32, cpuInfo, sizeof(cpuInfo));
+    }
+
+    return cpuName;
 }
 
 int WindowsOptions::getProcessorFamily()
@@ -356,7 +327,7 @@ int WindowsOptions::getNumberOfProcessors()
     return static_cast<int>(systemInformation.dwNumberOfProcessors);
 }
 
-void WindowsOptions::getPhysicalMemorySize(int64_t *totalSize, int64_t *availableSize)
+void WindowsOptions::getPhysicalMemorySize(int64_t *const totalSize, int64_t *const availableSize)
 {
     MEMORYSTATUSEX memoryStatus;
     memoryStatus.dwLength = sizeof(memoryStatus);
@@ -377,7 +348,7 @@ void WindowsOptions::getPhysicalMemorySize(int64_t *totalSize, int64_t *availabl
         *availableSize = static_cast<int64_t>(memoryStatus.ullAvailPhys);
 }
 
-void WindowsOptions::getVirtualMemorySize(int64_t *totalSize, int64_t *availableSize)
+void WindowsOptions::getVirtualMemorySize(int64_t *const totalSize, int64_t *const availableSize)
 {
     MEMORYSTATUSEX memoryStatus;
     memoryStatus.dwLength = sizeof(memoryStatus);
@@ -398,7 +369,7 @@ void WindowsOptions::getVirtualMemorySize(int64_t *totalSize, int64_t *available
         *availableSize = static_cast<int64_t>(memoryStatus.ullAvailVirtual);
 }
 
-void WindowsOptions::getPageFileSize(int64_t *totalSize, int64_t *availableSize)
+void WindowsOptions::getPageFileSize(int64_t *const totalSize, int64_t *const availableSize)
 {
     MEMORYSTATUSEX memoryStatus;
     memoryStatus.dwLength = sizeof(memoryStatus);
@@ -419,7 +390,7 @@ void WindowsOptions::getPageFileSize(int64_t *totalSize, int64_t *availableSize)
         *availableSize = static_cast<int64_t>(memoryStatus.ullAvailPageFile);
 }
 
-void WindowsOptions::getFullScreenSize(int *width, int *height)
+void WindowsOptions::getFullScreenSize(int *const width, int *const height)
 {
     if (width  != nullptr)
         *width  = GetSystemMetrics(SM_CXSCREEN);
@@ -490,7 +461,7 @@ std::string WindowsOptions::getDiskType(const std::string &diskName)
     }
 }
 
-void WindowsOptions::getDiskSize(const std::string &diskName, int64_t *totalSize, int64_t *freeSize)
+void WindowsOptions::getDiskSize(const std::string &diskName, int64_t *const totalSize, int64_t *const freeSize)
 {
     DWORD totalClusters;
     DWORD freeClusters;

@@ -60,7 +60,7 @@ void DataHandlerToHTML::addProperty(const QString &name, const QString &value, c
     _file->write("\t\t\t<SPAN class=\"property\">\n");
 
     _file->write("\t\t\t\t<SPAN class=\"property-name\">");
-    _file->write(QString("%1 ").arg(name).toUtf8());
+    _file->write(QString("%1: ").arg(name).toUtf8());
     _file->write("</SPAN>\n");
 
     _file->write("\t\t\t\t<SPAN class=\"property-value\">");

@@ -55,7 +55,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	Qt5::Core 
 	Qt5::Gui 
 	Qt5::Widgets 
-	Qt5::WebEngineWidgets
+	Qt5::WebEngineWidgets 
+	Advapi32 
+	User32 
+	Gdi32
 )
 
 get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)

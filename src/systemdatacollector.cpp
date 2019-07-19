@@ -25,13 +25,15 @@ void SystemDataCollector::collectOperatingSystemData(DataHandlerToHTML &dataHand
 {
     dataHandler.beginGroup("Operating System");
 
-    dataHandler.addProperty("OS Name", QString::fromStdString(getOSName()), true);
+    bool is64Bit = is64BitSystem();
+    QString formattedString;
+    formattedString.sprintf("%s %d-bit", getOSName().c_str(), (is64Bit? 64 : 32));
+    dataHandler.addProperty("OS Name", formattedString, true);
 
     int minorVersion;
     int majorVersion;
     int buildNumber;
     getOSVersion(&minorVersion, &majorVersion, &buildNumber);
-    QString formattedString;
     formattedString.sprintf("Version %d.%d Build (%d)", minorVersion, majorVersion, buildNumber);
     dataHandler.addProperty("OS Info", formattedString, true);
 
@@ -40,9 +42,8 @@ void SystemDataCollector::collectOperatingSystemData(DataHandlerToHTML &dataHand
     dataHandler.addProperty("Windows Folder", QString::fromStdString(getWindowsFolder()), true);
     dataHandler.addProperty("System Folder",  QString::fromStdString(getSystemFolder() ), true);
 
-    dataHandler.addProperty("Local Time and Date",
-                            QString::fromStdString(getLocalDate() + " " + getLocalTime()),
-                            true);
+    formattedString.sprintf("%s %s", getLocalDate().c_str(), getLocalTime().c_str());
+    dataHandler.addProperty("Local Time and Date", formattedString, true);
 
     dataHandler.addProperty("Administrator", (isUserAnAdministrator())? "Yes" : "No", true);
 
@@ -73,10 +74,11 @@ void SystemDataCollector::collectHardwareData(DataHandlerToHTML &dataHandler)
 {
     dataHandler.beginGroup("Hardware");
 
-    dataHandler.addProperty("Processor Family",     QString::number(getProcessorFamily()   ), true);
-    dataHandler.addProperty("Processor Model",      QString::number(getProcessorModel()    ), true);
-    dataHandler.addProperty("Processor Stepping",   QString::number(getProcessorStepping() ), true);
-    dataHandler.addProperty("Number of Processors", QString::number(getNumberOfProcessors()), true);
+    dataHandler.addProperty("Processor",            QString::fromStdString(getProcessorName()), true);
+    dataHandler.addProperty("Processor Family",     QString::number(getProcessorFamily()     ), true);
+    dataHandler.addProperty("Processor Model",      QString::number(getProcessorModel()      ), true);
+    dataHandler.addProperty("Processor Stepping",   QString::number(getProcessorStepping()   ), true);
+    dataHandler.addProperty("Number of Processors", QString::number(getNumberOfProcessors()  ), true);
 
     int64_t totalPysical;
     int64_t availablePhysical;
