@@ -6,13 +6,12 @@
 
 namespace WindowsOptions
 {
-    double      fromBytesToGigabytes(const int64_t bytes);
-    std::string getWindowsVersion();
-    bool        is64BitSystem();
+    double fromBytesToGigabytes(const int64_t bytes);
+    bool   is64BitSystem();
 
     // Operating system
     std::string getOSName();
-    void        getOSVersion(int *majorVersion, int *minorVersion, int *buildNumber);
+    void        getOSVersion(int *const majorVersion, int *const minorVersion, int *const buildNumber);
     std::string getComputerName();
     std::string getUserName();
     std::string getWindowsFolder();
@@ -33,22 +32,23 @@ namespace WindowsOptions
     int          getTimeFormatSpecifier();
 
     // Hardware
-    int  getProcessorFamily();
-    int  getProcessorModel();
-    int  getProcessorStepping();
-    int  getNumberOfProcessors();
-    void getPhysicalMemorySize(int64_t *totalSize, int64_t *avilableSize);
-    void getVirtualMemorySize(int64_t *totalSize, int64_t *avilableSize);
-    void getPageFileSize(int64_t *totalSize, int64_t *avilableSize);
-    void getFullScreenSize(int *width, int *height);
-    int  getBitsPerPixel();
-    int  getNumberOfMonitors();
+    std::string getProcessorName();
+    int         getProcessorFamily();
+    int         getProcessorModel();
+    int         getProcessorStepping();
+    int         getNumberOfProcessors();
+    void        getPhysicalMemorySize(int64_t *const totalSize, int64_t *const avilableSize);
+    void        getVirtualMemorySize(int64_t *const totalSize, int64_t *const avilableSize);
+    void        getPageFileSize(int64_t *const totalSize, int64_t *const avilableSize);
+    void        getFullScreenSize(int *const width, int *const height);
+    int         getBitsPerPixel();
+    int         getNumberOfMonitors();
 
     // Disks
     std::vector<std::string> getDisks();
-    std::string getDiskType(const std::string &diskName);
-    void        getDiskSize(const std::string &diskName, int64_t *totalSize, int64_t *freeSize);
-    std::string getDiskFileSystem(const std::string &diskName);
+    std::string              getDiskType(const std::string &diskName);
+    void                     getDiskSize(const std::string &diskName, int64_t *const totalSize, int64_t *const freeSize);
+    std::string              getDiskFileSystem(const std::string &diskName);
 }
 
 #endif // WINDOWSOPTIONS_H

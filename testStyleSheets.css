@@ -1,0 +1,20 @@
+.group-name
+{
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+.property:hover
+{
+	background-color: #99CCFF;
+}
+
+.property-name
+{
+	font-weight: bold;
+}
+
+.property-value
+{
+	font-style: italic;
+}
