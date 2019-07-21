@@ -2,8 +2,10 @@
 #include "windowsoptions.h"
 #include "datahandlertohtml.h"
 #include <QString>
-#include <array>
+#include <string>
+#include <vector>
 #include <cstdint>
+#include <cmath>
 
 using namespace WindowsOptions;
 
@@ -37,10 +39,10 @@ void SystemDataCollector::collectOperatingSystemData(DataHandlerToHTML &dataHand
     formattedString.sprintf("Version %d.%d Build (%d)", minorVersion, majorVersion, buildNumber);
     dataHandler.addProperty("OS Info", formattedString, true);
 
-    dataHandler.addProperty("Computer Name",  QString::fromStdString(getComputerName() ), true);
-    dataHandler.addProperty("User Name",      QString::fromStdString(getUserName()     ), true);
+    dataHandler.addProperty("Computer Name" , QString::fromStdString(getComputerName() ), true);
+    dataHandler.addProperty("User Name"     , QString::fromStdString(getUserName()     ), true);
     dataHandler.addProperty("Windows Folder", QString::fromStdString(getWindowsFolder()), true);
-    dataHandler.addProperty("System Folder",  QString::fromStdString(getSystemFolder() ), true);
+    dataHandler.addProperty("System Folder" , QString::fromStdString(getSystemFolder() ), true);
 
     formattedString.sprintf("%s %s", getLocalDate().c_str(), getLocalTime().c_str());
     dataHandler.addProperty("Local Time and Date", formattedString, true);
@@ -54,14 +56,14 @@ void SystemDataCollector::collectUserLocaleSettingsData(DataHandlerToHTML &dataH
 {
     dataHandler.beginGroup("User Locale Settings");
 
-    dataHandler.addProperty("Code Page",     QString::number(getCodePage()   ),        true);
-    dataHandler.addProperty("OEM Code Page", QString::number(getOEMCodePage()),        true);
-    dataHandler.addProperty("Country Code",  QString::number(getCountryCode()),        true);
-    dataHandler.addProperty("Country",       QString::fromStdWString(getCountry()   ), true);
-    dataHandler.addProperty("Language",      QString::fromStdWString(getLanguage()  ), true);
-    dataHandler.addProperty("Time Format",   QString::fromStdWString(getTimeFormat()), true);
-    dataHandler.addProperty("Date Format",   QString::fromStdWString(getDateFormat()), true);
-    dataHandler.addProperty("Currency",      QString::fromStdWString(getCurrency()  ), true);
+    dataHandler.addProperty("Code Page"    , QString::number(getCodePage()   )       , true);
+    dataHandler.addProperty("OEM Code Page", QString::number(getOEMCodePage())       , true);
+    dataHandler.addProperty("Country Code" , QString::number(getCountryCode())       , true);
+    dataHandler.addProperty("Country"      , QString::fromStdWString(getCountry()   ), true);
+    dataHandler.addProperty("Language"     , QString::fromStdWString(getLanguage()  ), true);
+    dataHandler.addProperty("Time Format"  , QString::fromStdWString(getTimeFormat()), true);
+    dataHandler.addProperty("Date Format"  , QString::fromStdWString(getDateFormat()), true);
+    dataHandler.addProperty("Currency"     , QString::fromStdWString(getCurrency()  ), true);
 
     QString formattedString;
     formattedString.sprintf("%d-hour format", getTimeFormatSpecifier());
@@ -75,34 +77,42 @@ void SystemDataCollector::collectHardwareData(DataHandlerToHTML &dataHandler)
     dataHandler.beginGroup("Hardware");
 
     dataHandler.addProperty("Processor",            QString::fromStdString(getProcessorName()), true);
-    dataHandler.addProperty("Processor Family",     QString::number(getProcessorFamily()     ), true);
-    dataHandler.addProperty("Processor Model",      QString::number(getProcessorModel()      ), true);
-    dataHandler.addProperty("Processor Stepping",   QString::number(getProcessorStepping()   ), true);
-    dataHandler.addProperty("Number of Processors", QString::number(getNumberOfProcessors()  ), true);
+
+
+    QString formattedString;
+    formattedString.sprintf("%d MHz", getProcessorMHzFrequency());
+    dataHandler.addProperty("Processor Speed", formattedString, true);
+
+    dataHandler.addProperty("Processor Family"    , QString::number(getProcessorFamily()   )    , true);
+    dataHandler.addProperty("Processor Model"     , QString::number(getProcessorModel()    )    , true);
+    dataHandler.addProperty("Processor Stepping"  , QString::number(getProcessorStepping() )    , true);
+    dataHandler.addProperty("Number of Processors", QString::number(getNumberOfProcessors())    , true);
+    dataHandler.addProperty("Bios"                , QString::fromStdString(getBios()           ), true);
+    dataHandler.addProperty("Bios Information"    , QString::fromStdString(getBiosInformation()), true);
+    dataHandler.addProperty("Bios Date"           , QString::fromStdString(getBiosDate()       ), true);
 
     int64_t totalPysical;
     int64_t availablePhysical;
     getPhysicalMemorySize(&totalPysical, &availablePhysical);
-    QString formattedString;
-    formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalPysical)     );
+    formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(totalPysical)     );
     dataHandler.addProperty("Physical Memory",           formattedString, true);
-    formattedString.sprintf("%lf GB", fromBytesToGigabytes(availablePhysical));
+    formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(availablePhysical));
     dataHandler.addProperty("Physical Memory Available", formattedString, true);
 
     int64_t totalVirtual;
     int64_t availableVirtual;
     getVirtualMemorySize(&totalVirtual, &availableVirtual);
-    formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalVirtual)    );
+    formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(totalVirtual)    );
     dataHandler.addProperty("Virtual Memory",           formattedString, true);
-    formattedString.sprintf("%lf GB", fromBytesToGigabytes(availableVirtual));
+    formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(availableVirtual));
     dataHandler.addProperty("Virtual Memory Available", formattedString, true);
 
     int64_t totalPageFile;
     int64_t availablePageFile;
     getPageFileSize(&totalPageFile, &availablePageFile);
-    formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalPageFile)    );
+    formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(totalPageFile)    );
     dataHandler.addProperty("Page File",           formattedString, true);
-    formattedString.sprintf("%lf GB", fromBytesToGigabytes(availablePageFile));
+    formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(availablePageFile));
     dataHandler.addProperty("Page File Available", formattedString, true);
 
     int screenWidth;
@@ -130,10 +140,11 @@ void SystemDataCollector::collectDisksData(DataHandlerToHTML &dataHandler)
         int64_t totalDiskSize;
         int64_t freeDiskSize;
         getDiskSize(disk, &totalDiskSize, &freeDiskSize);
+
         QString formattedString;
-        formattedString.sprintf("%lf GB", fromBytesToGigabytes(totalDiskSize));
-        dataHandler.addProperty("Size",      formattedString, false);
-        formattedString.sprintf("%lf GB", fromBytesToGigabytes(freeDiskSize));
+        formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(totalDiskSize));
+        dataHandler.addProperty("Size"     , formattedString, false);
+        formattedString.sprintf("%7.3lf GB", fromBytesToGigabytes(freeDiskSize) );
         dataHandler.addProperty("Free Size", formattedString, false);
 
         dataHandler.addProperty("File System", QString::fromStdString(getDiskFileSystem(disk)), true);

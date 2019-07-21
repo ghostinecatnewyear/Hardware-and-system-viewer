@@ -16,6 +16,7 @@ namespace WindowsOptions
     std::string getUserName();
     std::string getWindowsFolder();
     std::string getSystemFolder();
+    std::string getDomainName(); // не реализована
     std::string getLocalTime();
     std::string getLocalDate();
     bool        isUserAnAdministrator();
@@ -33,10 +34,14 @@ namespace WindowsOptions
 
     // Hardware
     std::string getProcessorName();
+    int         getProcessorMHzFrequency();
     int         getProcessorFamily();
     int         getProcessorModel();
     int         getProcessorStepping();
     int         getNumberOfProcessors();
+    std::string getBios();
+    std::string getBiosInformation();
+    std::string getBiosDate();
     void        getPhysicalMemorySize(int64_t *const totalSize, int64_t *const avilableSize);
     void        getVirtualMemorySize(int64_t *const totalSize, int64_t *const avilableSize);
     void        getPageFileSize(int64_t *const totalSize, int64_t *const avilableSize);
@@ -47,7 +52,8 @@ namespace WindowsOptions
     // Disks
     std::vector<std::string> getDisks();
     std::string              getDiskType(const std::string &diskName);
-    void                     getDiskSize(const std::string &diskName, int64_t *const totalSize, int64_t *const freeSize);
+    void                     getDiskSize(const std::string &diskName, int64_t *const totalSize,
+                                                                      int64_t *const freeSize);
     std::string              getDiskFileSystem(const std::string &diskName);
 }
 
