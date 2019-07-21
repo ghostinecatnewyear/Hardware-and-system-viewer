@@ -44,6 +44,8 @@ std::string WindowsOptions::getOSName()
                                           reinterpret_cast<LPBYTE>(osName.get()),
                                           &size))
     {
+        RegCloseKey(key);
+
         return "Unknown";
     }
 
@@ -123,6 +125,60 @@ std::string WindowsOptions::getSystemFolder()
 
     return folderPath.get();
 }
+
+//std::string WindowsOptions::getDomainName()
+//{
+//    HKEY key;
+
+//    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+//                                       "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+//                                       0,
+//                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+//                                       &key))
+//    {
+//        return "Unknown";
+//    }
+
+//    DWORD size = 64;
+//    std::unique_ptr<CHAR> domainName(new CHAR[size]);
+
+//    if (ERROR_SUCCESS != RegQueryValueExA(key,
+//                                          "Domain",
+//                                          NULL,
+//                                          NULL,
+//                                          reinterpret_cast<LPBYTE>(domainName.get()),
+//                                          &size))
+//    {
+//        RegCloseKey(key);
+
+//        return "Unknown";
+//    }
+
+//    if (domainName.get()[0] != '\0')
+//    {
+//        RegCloseKey(key);
+
+//        return domainName.get();
+//    }
+
+//    LSTATUS result;
+//    result = RegQueryValueExA(key,
+//                              "HostName",
+//                              NULL,
+//                              NULL,
+//                              reinterpret_cast<LPBYTE>(domainName.get()),
+//                              &size);
+//    if (result != ERROR_SUCCESS && result != ERROR_MORE_DATA)
+//    {
+//        RegCloseKey(key);
+
+//        return "Unknown";
+//    }
+
+//    RegCloseKey(key);
+
+//    return domainName.get();
+//}
 
 std::string WindowsOptions::getLocalTime()
 {
@@ -270,24 +326,68 @@ int WindowsOptions::getTimeFormatSpecifier()
 
 std::string WindowsOptions::getProcessorName()
 {
-    int cpuInfo[4];
-    __cpuid(cpuInfo, 0x80000000);
-    unsigned int nExIds = cpuInfo[0];
+    HKEY key;
 
-    char cpuName[128];
-    for (unsigned int i = 0x80000000; i <= nExIds; ++i)
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+                                       0,
+                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+                                       &key))
     {
-        __cpuid(cpuInfo, i);
-
-        if  (i == 0x80000002)
-            memcpy(cpuName,      cpuInfo, sizeof(cpuInfo));
-        else if (i == 0x80000003)
-            memcpy(cpuName + 16, cpuInfo, sizeof(cpuInfo));
-        else if(i == 0x80000004)
-            memcpy(cpuName + 32, cpuInfo, sizeof(cpuInfo));
+        return "Unknown";
     }
 
-    return cpuName;
+    DWORD size = 128;
+    std::unique_ptr<CHAR> processorName(new CHAR[size]);
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key,
+                                          "ProcessorNameString",
+                                          NULL,
+                                          NULL,
+                                          reinterpret_cast<LPBYTE>(processorName.get()),
+                                          &size))
+    {
+        RegCloseKey(key);
+
+        return "Unknown";
+    }
+
+    RegCloseKey(key);
+
+    return processorName.get();
+}
+
+int WindowsOptions::getProcessorMHzFrequency()
+{
+    HKEY key;
+
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+                                       0,
+                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+                                       &key))
+    {
+        return 0;
+    }
+
+    DWORD size = sizeof(DWORD);
+    std::unique_ptr<DWORD> processorSpeed(new DWORD);
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key,
+                                          "~MHz",
+                                          NULL,
+                                          NULL,
+                                          reinterpret_cast<LPBYTE>(processorSpeed.get()),
+                                          &size))
+    {
+        RegCloseKey(key);
+
+        return 0;
+    }
+
+    RegCloseKey(key);
+
+    return static_cast<int>(*processorSpeed);
 }
 
 int WindowsOptions::getProcessorFamily()
@@ -295,7 +395,7 @@ int WindowsOptions::getProcessorFamily()
     SYSTEM_INFO systemInformation;
     GetSystemInfo(&systemInformation);
 
-    return systemInformation.wProcessorArchitecture;
+    return systemInformation.wProcessorLevel;
 }
 
 int WindowsOptions::getProcessorModel()
@@ -327,10 +427,109 @@ int WindowsOptions::getNumberOfProcessors()
     return static_cast<int>(systemInformation.dwNumberOfProcessors);
 }
 
+std::string WindowsOptions::getBios()
+{
+    HKEY key;
+
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "HARDWARE\\DESCRIPTION\\System\\BIOS",
+                                       0,
+                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+                                       &key))
+    {
+        return "Unknown";
+    }
+
+    DWORD size = 128;
+    std::unique_ptr<CHAR> bios(new CHAR[size]);
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key,
+                                          "BIOSVersion",
+                                          NULL,
+                                          NULL,
+                                          reinterpret_cast<LPBYTE>(bios.get()),
+                                          &size))
+    {
+        RegCloseKey(key);
+
+        return "Unknown";
+    }
+
+    RegCloseKey(key);
+
+    return bios.get();
+}
+
+std::string WindowsOptions::getBiosInformation()
+{
+    HKEY key;
+
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "HARDWARE\\DESCRIPTION\\System",
+                                       0,
+                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+                                       &key))
+    {
+        return "Unknown";
+    }
+
+    DWORD size = 128;
+    std::unique_ptr<CHAR> biosInfo(new CHAR[size]);
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key,
+                                          "SystemBiosVersion",
+                                          NULL,
+                                          NULL,
+                                          reinterpret_cast<LPBYTE>(biosInfo.get()),
+                                          &size))
+    {
+        RegCloseKey(key);
+
+        return "Unknown";
+    }
+
+    RegCloseKey(key);
+
+    return biosInfo.get();
+}
+
+std::string WindowsOptions::getBiosDate()
+{
+    HKEY key;
+
+    if (ERROR_SUCCESS != RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                                       "HARDWARE\\DESCRIPTION\\System\\BIOS",
+                                       0,
+                                       KEY_QUERY_VALUE | KEY_WOW64_64KEY,
+                                       &key))
+    {
+        return "Unknown";
+    }
+
+    DWORD size = 128;
+    std::unique_ptr<CHAR> biosDate(new CHAR[size]);
+
+    if (ERROR_SUCCESS != RegQueryValueExA(key,
+                                          "BIOSReleaseDate",
+                                          NULL,
+                                          NULL,
+                                          reinterpret_cast<LPBYTE>(biosDate.get()),
+                                          &size))
+    {
+        RegCloseKey(key);
+
+        return "Unknown";
+    }
+
+    RegCloseKey(key);
+
+    return biosDate.get();
+}
+
 void WindowsOptions::getPhysicalMemorySize(int64_t *const totalSize, int64_t *const availableSize)
 {
     MEMORYSTATUSEX memoryStatus;
-    memoryStatus.dwLength = sizeof(memoryStatus);
+    memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
 
     if (!GlobalMemoryStatusEx(&memoryStatus))
     {
@@ -351,7 +550,7 @@ void WindowsOptions::getPhysicalMemorySize(int64_t *const totalSize, int64_t *co
 void WindowsOptions::getVirtualMemorySize(int64_t *const totalSize, int64_t *const availableSize)
 {
     MEMORYSTATUSEX memoryStatus;
-    memoryStatus.dwLength = sizeof(memoryStatus);
+    memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
 
     if (!GlobalMemoryStatusEx(&memoryStatus))
     {
@@ -372,7 +571,7 @@ void WindowsOptions::getVirtualMemorySize(int64_t *const totalSize, int64_t *con
 void WindowsOptions::getPageFileSize(int64_t *const totalSize, int64_t *const availableSize)
 {
     MEMORYSTATUSEX memoryStatus;
-    memoryStatus.dwLength = sizeof(memoryStatus);
+    memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
 
     if (!GlobalMemoryStatusEx(&memoryStatus))
     {
